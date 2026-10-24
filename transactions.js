@@ -171,4 +171,5 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   renderTransactions();
+updateExpenseIntelligence();
 });
