@@ -194,7 +194,63 @@
           </div>
         </article>
       </section>
+      <section class="panel budget-panel" id="budgetPlanner">
+  <div class="panel-heading">
+    <div>
+      <div class="section-kicker">STAY ON TRACK</div>
+      <h2>Monthly budget planner</h2>
+    </div>
+    <span class="panel-icon">
+      <i data-lucide="wallet"></i>
+    </span>
+  </div>
 
+  <label class="field" for="monthlyBudgetInput">
+    <span>Set your monthly spending limit (₹)</span>
+    <input
+      id="monthlyBudgetInput"
+      type="number"
+      min="1"
+      step="0.01"
+      placeholder="e.g. 10000"
+    >
+  </label>
+
+  <button
+    class="primary-button"
+    id="saveBudgetButton"
+    type="button"
+  >
+    Save monthly budget
+  </button>
+
+  <div class="budget-summary">
+    <span>Spent this month</span>
+    <strong id="budgetSpent">₹0.00</strong>
+  </div>
+
+  <div
+    class="budget-progress-track"
+    role="progressbar"
+    aria-label="Monthly budget used"
+    aria-valuemin="0"
+    aria-valuemax="100"
+    aria-valuenow="0"
+    id="budgetProgressTrack"
+  >
+    <div class="budget-progress-fill" id="budgetProgressFill"></div>
+  </div>
+
+  <div class="budget-summary">
+    <span id="budgetPercent">0% used</span>
+    <span id="budgetRemaining">Set a budget to begin</span>
+  </div>
+
+  <p id="budgetAlert" class="budget-alert" role="status" aria-live="polite">
+    Set a monthly budget to start tracking your spending.
+  </p>
+</section>
+    
       <section class="bottom-grid">
         <article class="panel transaction-panel" id="transactions">
           <div class="panel-heading">
