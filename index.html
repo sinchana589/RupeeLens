@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0a1019">
+  <title>RupeeLens — Financial Intelligence</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+  <div class="app-shell">
+
+    <aside class="sidebar">
+      <a class="brand" href="#">
+        <span class="brand-icon"><i data-lucide="scan-eye"></i></span>
+        <span>Rupee<span class="brand-light">Lens</span></span>
+      </a>
+
+      <div class="workspace-label">WORKSPACE</div>
+      <nav class="navigation">
+        <a class="nav-link active" href="#overview"><i data-lucide="layout-dashboard"></i> Overview</a>
+        <a class="nav-link" href="#transactions"><i data-lucide="arrow-left-right"></i> Transactions</a>
+        <a class="nav-link" href="#intelligence"><i data-lucide="scan-search"></i> Expense intelligence <span class="nav-dot"></span></a>
+        <a class="nav-link" href="#insights"><i data-lucide="chart-no-axes-combined"></i> Insights</a>
+      </nav>
+
+      <div class="sidebar-spacer"></div>
+
+      <div class="privacy-card">
+        <i data-lucide="shield-check"></i>
+        <h3>Your money. Your control.</h3>
+        <p>Financial clarity starts with understanding your data.</p>
+        <span class="privacy-status"><span></span> Privacy-first design</span>
+      </div>
+
+      <div class="profile">
+        <div class="avatar">RL</div>
+        <div class="profile-info">
+          <strong>Finance workspace</strong>
+          <span>Personal dashboard</span>
+        </div>
+        <i data-lucide="settings-2"></i>
+      </div>
+    </aside>
+
+    <main class="main-content" id="overview">
+      <header class="topbar">
+        <div class="breadcrumb">Workspace <span>/</span> <strong>Overview</strong></div>
+        <div class="top-actions">
+          <span class="demo-badge"><span></span> DEMO WORKSPACE</span>
+          <button class="icon-button" id="refreshButton" aria-label="Refresh dashboard">
+            <i data-lucide="refresh-cw"></i>
+          </button>
+          <div class="top-avatar">RL</div>
+        </div>
+      </header>
+
+      <section class="welcome-section">
+        <div>
+          <div class="eyebrow"><span class="eyebrow-line"></span> YOUR FINANCIAL PULSE</div>
+          <h1>See beyond<br>the <span class="gradient-text">balance.</span></h1>
+          <p class="welcome-description">
+            Understand your spending, uncover hidden commitments,
+            and make every rupee count.
+          </p>
+        </div>
+        <div class="welcome-art" aria-hidden="true">
+          <div class="orbit orbit-one"></div>
+          <div class="orbit orbit-two"></div>
+          <div class="orbit orbit-three"></div>
+          <div class="orbit-core"><i data-lucide="scan-eye"></i></div>
+          <span class="orbit-point point-one"></span>
+          <span class="orbit-point point-two"></span>
+          <span class="orbit-point point-three"></span>
+        </div>
+      </section>
+
+      <section class="stats-grid" aria-label="Financial summary">
+        <article class="stat-card balance-card">
+          <div class="stat-top">
+            <span class="stat-label">Available balance</span>
+            <span class="stat-icon lime"><i data-lucide="wallet"></i></span>
+          </div>
+          <div class="stat-value" id="balance">₹0.00</div>
+          <div class="stat-footer"><span class="status-mark"></span> Income minus expenses</div>
+        </article>
+
+        <article class="stat-card">
+          <div class="stat-top">
+            <span class="stat-label">Total income</span>
+            <span class="stat-icon blue"><i data-lucide="trending-up"></i></span>
+          </div>
+          <div class="stat-value" id="income">₹0.00</div>
+          <div class="stat-footer">Money coming in</div>
+        </article>
+
+        <article class="stat-card">
+          <div class="stat-top">
+            <span class="stat-label">Total expenses</span>
+            <span class="stat-icon coral"><i data-lucide="trending-down"></i></span>
+          </div>
+          <div class="stat-value" id="expenses">₹0.00</div>
+          <div class="stat-footer">Money going out</div>
+        </article>
+
+        <article class="stat-card">
+          <div class="stat-top">
+            <span class="stat-label">Recurring payments</span>
+            <span class="stat-icon purple"><i data-lucide="repeat-2"></i></span>
+          </div>
+          <div class="stat-value" id="recurringTotal">₹0.00</div>
+          <div class="stat-footer">Estimated monthly commitments</div>
+        </article>
+      </section>
+
+      <section class="content-grid">
+        <article class="panel spending-panel" id="insights">
+          <div class="panel-heading">
+            <div>
+              <div class="section-kicker">YOUR MONEY IN MOTION</div>
+              <h2>Spending overview</h2>
+            </div>
+            <span class="panel-icon"><i data-lucide="chart-no-axes-combined"></i></span>
+          </div>
+
+          <div class="chart-summary">
+            <div>
+              <span class="muted-label">Recorded expenses</span>
+              <div class="chart-total" id="chartTotal">₹0.00</div>
+            </div>
+            <span class="chart-period">ALL RECORDS</span>
+          </div>
+
+          <div class="chart-area">
+            <div class="chart-y-labels">
+              <span>High</span><span>Mid</span><span>Low</span>
+            </div>
+            <div class="chart-placeholder" id="spendingChart">
+              <div class="chart-grid-lines"></div>
+              <div class="chart-empty">
+                <i data-lucide="chart-no-axes-column-increasing"></i>
+                <span>Your spending story starts here.</span>
+                <small>Add transactions to build your chart.</small>
+              </div>
+            </div>
+          </div>
+          <div class="chart-legend">
+            <span><i class="legend-dot lime-dot"></i> Income</span>
+            <span><i class="legend-dot blue-dot"></i> Expenses</span>
+            <span class="chart-note">Charts activate with transaction data</span>
+          </div>
+        </article>
+
+        <article class="panel intelligence-panel" id="intelligence">
+          <div class="panel-heading">
+            <div>
+              <div class="section-kicker">LOOK CLOSER</div>
+              <h2>Hidden expense radar</h2>
+            </div>
+            <span class="radar-icon"><i data-lucide="scan-search"></i></span>
+          </div>
+
+          <div class="radar-visual" aria-hidden="true">
+            <div class="radar-ring ring-one"></div>
+            <div class="radar-ring ring-two"></div>
+            <div class="radar-ring ring-three"></div>
+            <div class="radar-sweep"></div>
+            <i data-lucide="scan-eye"></i>
+            <span class="radar-blip blip-one"></span>
+            <span class="radar-blip blip-two"></span>
+          </div>
+
+          <div class="radar-message">
+            <h3 id="discoveryTitle">Your money deserves a closer look.</h3>
+            <p id="discoveryMessage">
+              Add your expenses to investigate recurring payments,
+              overlooked costs, and spending patterns.
+            </p>
+          </div>
+
+          <div class="radar-footer">
+            <span><span class="radar-status"></span> ANALYSIS READY</span>
+            <a href="#transactions">Explore <i data-lucide="arrow-up-right"></i></a>
+          </div>
+        </article>
+      </section>
+
+      <section class="bottom-grid">
+        <article class="panel transaction-panel" id="transactions">
+          <div class="panel-heading">
+            <div>
+              <div class="section-kicker">FOLLOW EVERY RUPEE</div>
+              <h2>Record a transaction</h2>
+            </div>
+            <span class="panel-icon"><i data-lucide="plus-circle"></i></span>
+          </div>
+
+          <form id="transactionForm">
+            <div class="form-row">
+              <label class="field">
+                <span>Transaction type</span>
+                <select id="type" name="type">
+                  <option value="expense">Expense</option>
+                  <option value="income">Income</option>
+                </select>
+              </label>
+              <label class="field">
+                <span>Amount (₹)</span>
+                <input id="amount" name="amount" type="number" min="0.01" step="0.01" placeholder="e.g. 450" required>
+              </label>
+            </div>
+
+            <label class="field">
+              <span>Description</span>
+              <input id="description" name="description" type="text" placeholder="e.g. Monthly streaming subscription" maxlength="100" required>
+            </label>
+
+            <div class="form-row">
+              <label class="field">
+                <span>Category</span>
+                <select id="category" name="category">
+                  <option value="Food">Food & dining</option>
+                  <option value="Travel">Transport & travel</option>
+                  <option value="Shopping">Shopping</option>
+                  <option value="Bills">Bills & utilities</option>
+                  <option value="Subscription">Subscriptions</option>
+                  <option value="Education">Education</option>
+                  <option value="Salary">Salary</option>
+                  <option value="Other">Other</option>
+                </select>
+              </label>
+              <label class="field">
+                <span>Date</span>
+                <input id="date" name="date" type="date" required>
+              </label>
+            </div>
+
+            <button class="primary-button" type="submit">
+              <i data-lucide="plus"></i> Add to financial records
+            </button>
+            <p class="form-hint"><i data-lucide="lock-keyhole"></i> Demo mode: enter sample data only.</p>
+          </form>
+        </article>
+
+        <article class="panel recent-panel">
+          <div class="panel-heading">
+            <div>
+              <div class="section-kicker">YOUR ACTIVITY</div>
+              <h2>Recent transactions</h2>
+            </div>
+            <span class="count-pill" id="transactionCount">0 RECORDS</span>
+          </div>
+
+          <div class="transaction-list" id="transactionList">
+            <div class="empty-transactions">
+              <span class="empty-icon"><i data-lucide="receipt-text"></i></span>
+              <strong>No transactions yet</strong>
+              <span>Your records will appear here after you add them.</span>
+            </div>
+          </div>
+
+          <div class="recent-footer">
+            <span>Organise today. Understand tomorrow.</span>
+            <i data-lucide="arrow-right"></i>
+          </div>
+        </article>
+      </section>
+
+      <footer class="footer">
+        <a class="footer-brand" href="#overview">RupeeLens<span>®</span></a>
+        <span>Financial clarity, one decision at a time.</span>
+        <span class="footer-version">HACKATHON PROTOTYPE · V1.0</span>
+      </footer>
+    </main>
+  </div>
+
+  <script>
+    if (window.lucide) lucide.createIcons();
+    document.getElementById("date").value =
+      new Date().toLocaleDateString("en-CA");
+  </script>
+
+  <!-- Team members will connect transactions.js and analysis.js here. -->
+</body>
+</html>
