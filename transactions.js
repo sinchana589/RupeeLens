@@ -72,6 +72,19 @@ function addTransaction(
 function getTransactions() {
   return transactions;
 }
+function deleteTransaction(id) {
+  transactions = transactions.filter(item => item.id !== id);
+  saveTransactions();
+  renderTransactions();
+
+  if (typeof updateExpenseIntelligence === "function") {
+    updateExpenseIntelligence();
+  }
+
+  if (typeof renderSpendingChart === "function") {
+    renderSpendingChart();
+  }
+}
 
 function displaySummary(items = transactions) {
   const summary = calculateSummary(items);
