@@ -187,7 +187,7 @@ function updateExpenseIntelligence() {
 
   const recurringEl = document.getElementById("recurringTotal");
   if (recurringEl) {
-    recurringEl.textContent = "₹" + repeatedTotal.toLocaleString("en-IN", {
+    recurringEl.textContent = "₹" + monthlyTotal.toLocaleString("en-IN", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
     });
