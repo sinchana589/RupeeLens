@@ -735,3 +735,61 @@ svg { flex-shrink: 0; }
   color: #ff9a91;
   white-space: nowrap;
 }
+/* Spending chart */
+#spendingChart.chart-active {
+  position: relative;
+  min-height: 230px;
+  display: flex;
+  align-items: stretch;
+  padding: 18px 12px 8px;
+  overflow: hidden;
+}
+
+#spendingChart .spending-bars {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: space-around;
+  align-items: stretch;
+  gap: 12px;
+  width: 100%;
+}
+
+#spendingChart .chart-column {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+}
+
+#spendingChart .bar-pair {
+  height: 175px;
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 5px;
+}
+
+#spendingChart .chart-bar {
+  width: min(24px, 40%);
+  min-height: 0;
+  border-radius: 5px 5px 1px 1px;
+}
+
+#spendingChart .income-bar {
+  background: #c6f36a;
+}
+
+#spendingChart .expense-bar {
+  background: #69a7ff;
+}
+
+#spendingChart .chart-column small {
+  color: #aab5c5;
+  font-size: 10px;
+  white-space: nowrap;
+}
