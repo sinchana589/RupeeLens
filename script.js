@@ -47,6 +47,7 @@ function renderSpendingChart() {
     startDate = new Date(
       today.getFullYear(), today.getMonth(), 1
     );
+
     endDate = new Date(
       today.getFullYear(), today.getMonth() + 1, 1
     );
@@ -55,7 +56,10 @@ function renderSpendingChart() {
       today.getFullYear(), today.getMonth() + 1, 0
     ).getDate();
 
-    labels = Array.from({ length: days }, (_, i) => String(i + 1));
+    labels = Array.from(
+      { length: days },
+      (_, i) => String(i + 1)
+    );
   } else {
     startDate = new Date(today.getFullYear(), 0, 1);
     endDate = new Date(today.getFullYear() + 1, 0, 1);
@@ -76,7 +80,9 @@ function renderSpendingChart() {
     if (
       !item.date ||
       !["income", "expense"].includes(item.type)
-    ) return;
+    ) {
+      return;
+    }
 
     const date = new Date(item.date + "T00:00:00");
     const amount = Number(item.amount);
@@ -87,7 +93,9 @@ function renderSpendingChart() {
       amount <= 0 ||
       date < startDate ||
       date >= endDate
-    ) return;
+    ) {
+      return;
+    }
 
     let index;
 
@@ -168,6 +176,8 @@ document.addEventListener("DOMContentLoaded", () => {
   );
 
   renderSpendingChart();
-});
-  renderBudgetPlanner();
+
+  if (typeof renderBudgetPlanner === "function") {
+    renderBudgetPlanner();
+  }
 });
