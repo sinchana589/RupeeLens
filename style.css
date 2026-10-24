@@ -1032,3 +1032,23 @@ svg { flex-shrink: 0; }
 .delete-btn:hover {
   background-color: darkred;
 }
+#chartRange {
+  background: #111c29;
+  color: #f3f6fa;
+  border: 1px solid #344154;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+#chartRange option {
+  background: #111c29;
+  color: #f3f6fa;
+}
+
+#spendingChart.chart-active {
+  overflow-x: auto;
+  overflow-y: hidden;
+}
