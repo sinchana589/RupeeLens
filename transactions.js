@@ -35,3 +35,10 @@ function addTransaction(
   saveTransactions();
   return true;
 }
+
+// Refresh the monthly budget planner when called.
+function refreshBudgetPlanner() {
+  if (typeof renderBudgetPlanner === "function") {
+    renderBudgetPlanner();
+  }
+}
