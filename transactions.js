@@ -1,3 +1,14 @@
+function getTransactions() {
+  try {
+    const saved = localStorage.getItem("rupeelens_transactions");
+    const parsed = JSON.parse(saved || "[]");
+
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (error) {
+    console.error("Could not load transactions:", error);
+    return [];
+  }
+}
 function addTransaction(
 name,
 type,
