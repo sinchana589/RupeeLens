@@ -793,3 +793,74 @@ svg { flex-shrink: 0; }
   font-size: 10px;
   white-space: nowrap;
 }
+/* RupeeLens spending chart visibility fix */
+#spendingChart.chart-active {
+  display: flex;
+  position: relative;
+  width: 100%;
+  min-height: 240px;
+  padding: 20px 12px 12px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+#spendingChart .chart-grid-lines {
+  position: absolute;
+  inset: 15px 0 35px;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 49px,
+    rgba(255, 255, 255, 0.09) 50px
+  );
+  pointer-events: none;
+}
+
+#spendingChart .spending-bars {
+  display: flex;
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  min-height: 200px;
+  gap: 12px;
+  justify-content: space-around;
+}
+
+#spendingChart .chart-column {
+  flex: 1;
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+}
+
+#spendingChart .bar-pair {
+  display: flex;
+  width: 100%;
+  height: 175px;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 5px;
+}
+
+#spendingChart .chart-bar {
+  display: block;
+  width: 18px;
+  max-width: 40%;
+  border-radius: 5px 5px 0 0;
+}
+
+#spendingChart .income-bar {
+  background: #c6f36a;
+}
+
+#spendingChart .expense-bar {
+  background: #69a7ff;
+}
+
+#spendingChart .chart-column small {
+  color: #c3cede;
+  font-size: 10px;
+}
