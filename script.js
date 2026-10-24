@@ -169,3 +169,146 @@ document.addEventListener("DOMContentLoaded", () => {
 
   renderSpendingChart();
 });
+const BUDGET_STORAGE_KEY = "rupeelens_monthly_budget";
+
+function formatBudgetMoney(amount) {
+  return "₹" + Number(amount).toLocaleString("en-IN", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+}
+
+function renderBudgetPlanner() {
+  const input = document.getElementById("monthlyBudgetInput");
+  const spentEl = document.getElementById("budgetSpent");
+  const fillEl = document.getElementById("budgetProgressFill");
+  const trackEl = document.getElementById("budgetProgressTrack");
+  const percentEl = document.getElementById("budgetPercent");
+  const remainingEl = document.getElementById("budgetRemaining");
+  const alertEl = document.getElementById("budgetAlert");
+
+  if (!input || typeof getTransactions !== "function") return;
+
+  const now = new Date();
+  const monthKey =
+    now.getFullYear() + "-" +
+    String(now.getMonth() + 1).padStart(2, "0");
+
+  let savedBudget = {};
+
+  try {
+    savedBudget = JSON.parse(
+      localStorage.getItem(BUDGET_STORAGE_KEY) || "{}"
+    );
+  } catch (error) {
+    savedBudget = {};
+  }
+
+  const budget = Number(savedBudget[monthKey]) || 0;
+
+  if (document.activeElement !== input) {
+    input.value = budget || "";
+  }
+
+  const spent = getTransactions()
+    .filter(item => {
+      if (item.type !== "expense" || !item.date) return false;
+
+      return item.date.slice(0, 7) === monthKey;
+    })
+    .reduce((sum, item) => {
+      const amount = Number(item.amount);
+      return sum + (Number.isFinite(amount) && amount > 0 ? amount : 0);
+    }, 0);
+
+  const percent = budget > 0 ? (spent / budget) * 100 : 0;
+  const remaining = budget - spent;
+
+  if (spentEl) spentEl.textContent = formatBudgetMoney(spent);
+
+  if (fillEl) {
+    fillEl.style.width = Math.min(percent, 100) + "%";
+    fillEl.classList.toggle("budget-warning", percent >= 80);
+    fillEl.classList.toggle("budget-exceeded", percent >= 100);
+  }
+
+  if (trackEl) {
+    trackEl.setAttribute(
+      "aria-valuenow",
+      String(Math.min(100, Math.round(percent)))
+    );
+  }
+
+  if (percentEl) {
+    percentEl.textContent = budget
+      ? `${Math.round(percent)}% used`
+      : "0% used";
+  }
+
+  if (remainingEl) {
+    remainingEl.textContent = budget
+      ? remaining >= 0
+        ? `${formatBudgetMoney(remaining)} left`
+        : `${formatBudgetMoney(Math.abs(remaining))} over budget`
+      : "Set a budget to begin";
+  }
+
+  if (!budget) {
+    alertEl.textContent =
+      "Set a monthly budget to start tracking your spending.";
+    alertEl.className = "budget-alert";
+  } else if (percent >= 100) {
+    alertEl.textContent =
+      "⚠️ Budget exceeded! Review your spending for this month.";
+    alertEl.className = "budget-alert budget-alert-danger";
+  } else if (percent >= 80) {
+    alertEl.textContent =
+      "⚠️ You've used at least 80% of your monthly budget.";
+    alertEl.className = "budget-alert budget-alert-warning";
+  } else {
+    alertEl.textContent =
+      "✓ You're within your monthly budget. Keep it up!";
+    alertEl.className = "budget-alert budget-alert-ok";
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const saveButton = document.getElementById("saveBudgetButton");
+
+  if (saveButton) {
+    saveButton.addEventListener("click", () => {
+      const input = document.getElementById("monthlyBudgetInput");
+      const amount = Number(input.value);
+
+      if (!Number.isFinite(amount) || amount <= 0) {
+        alert("Please enter a monthly budget greater than ₹0.");
+        return;
+      }
+
+      const now = new Date();
+      const monthKey =
+        now.getFullYear() + "-" +
+        String(now.getMonth() + 1).padStart(2, "0");
+
+      let budgets = {};
+
+      try {
+        budgets = JSON.parse(
+          localStorage.getItem(BUDGET_STORAGE_KEY) || "{}"
+        );
+      } catch (error) {
+        budgets = {};
+      }
+
+      budgets[monthKey] = amount;
+      localStorage.setItem(
+        BUDGET_STORAGE_KEY,
+        JSON.stringify(budgets)
+      );
+
+      renderBudgetPlanner();
+    });
+  }
+
+  renderBudgetPlanner();
+});
