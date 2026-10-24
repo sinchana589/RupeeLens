@@ -177,5 +177,7 @@ form.reset();
 if (typeof updateExpenseIntelligence === "function") {
   updateExpenseIntelligence();
 }
-updateExpenseIntelligence();
+ if (typeof renderSpendingChart === "function"){ 
+renderSpendingChart();
+ }   
 });
