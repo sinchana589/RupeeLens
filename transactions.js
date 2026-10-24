@@ -158,8 +158,11 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      renderTransactions();
-      form.reset();
+     renderTransactions();
+if (typeof updateExpenseIntelligence === "function") {
+  updateExpenseIntelligence();
+}
+form.reset();
       document.getElementById("date").value =
         new Date().toLocaleDateString("en-CA");
     });
@@ -171,5 +174,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   renderTransactions();
+if (typeof updateExpenseIntelligence === "function") {
+  updateExpenseIntelligence();
+}
 updateExpenseIntelligence();
 });
