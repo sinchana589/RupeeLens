@@ -172,8 +172,18 @@ function renderTransactions() {
         })
       }`;
 
-    row.append(details, amount);
-    list.appendChild(row);
+    const deleteBtn = document.createElement("button");
+deleteBtn.textContent = "🗑 Delete";
+deleteBtn.className = "delete-btn";
+
+deleteBtn.addEventListener("click", () => {
+  if (confirm("Are you sure you want to delete this transaction?")) {
+    deleteTransaction(item.id);
+  }
+});
+
+row.append(details, amount, deleteBtn);
+list.appendChild(row);
   });
 
   refreshDashboard();
