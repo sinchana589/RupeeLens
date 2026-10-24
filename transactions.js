@@ -1,8 +1,15 @@
-function calculateSummary(transactions) {
+const transactions = [
+  { name: "Salary", type: "income", amount: 20000 },
+  { name: "Food", type: "expense", amount: 2000 },
+  { name: "Shopping", type: "expense", amount: 500 },
+  { name: "Recharge", type: "expense", amount: 300 }
+];
+
+function calculateSummary(items) {
   let income = 0;
   let expenses = 0;
 
-  transactions.forEach(function (item) {
+  items.forEach(function (item) {
     if (item.type === "income") {
       income += item.amount;
     } else if (item.type === "expense") {
@@ -17,11 +24,25 @@ function calculateSummary(transactions) {
   };
 }
 
-const sampleTransactions = [
-  { name: "Salary", type: "income", amount: 20000 },
-  { name: "Food", type: "expense", amount: 2000 },
-  { name: "Shopping", type: "expense", amount: 1500 },
-  { name: "Recharge", type: "expense", amount: 300 }
-];
+function addTransaction(name, type, amount) {
+  if (!name.trim() ||
+      !["income", "expense"].includes(type) ||
+      !Number.isFinite(amount) ||
+      amount <= 0) {
+    return false;
+  }
 
-console.log(calculateSummary(sampleTransactions));
+  transactions.push({
+    name: name.trim(),
+    type: type,
+    amount: amount
+  });
+
+  return true;
+}
+
+function getTransactions() {
+  return transactions;
+}
+
+console.log(calculateSummary(transactions));
