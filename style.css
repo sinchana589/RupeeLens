@@ -864,3 +864,158 @@ svg { flex-shrink: 0; }
   color: #c3cede;
   font-size: 10px;
 }
+/* ========================================
+   RUPEELENS — WEEKLY SPENDING CHART
+   ======================================== */
+
+#spendingChart.chart-active {
+  position: relative;
+  display: block;
+  width: 100%;
+  min-height: 285px;
+  padding: 20px 8px 30px;
+  box-sizing: border-box;
+  overflow-x: auto;
+  overflow-y: hidden;
+  border-radius: 14px;
+}
+
+#spendingChart .chart-grid-lines {
+  position: absolute;
+  inset: 15px 0 65px;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 48px,
+    rgba(255, 255, 255, 0.08) 49px,
+    transparent 50px
+  );
+}
+
+#spendingChart .spending-bars {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(48px, 1fr));
+  gap: 4px;
+  width: 100%;
+  min-width: 350px;
+  height: 230px;
+}
+
+#spendingChart .chart-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 0;
+  height: 100%;
+  gap: 10px;
+}
+
+#spendingChart .bar-pair {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  height: 185px;
+  min-height: 185px;
+}
+
+#spendingChart .chart-bar {
+  display: block;
+  flex: 0 1 15px;
+  width: 15px;
+  min-width: 3px;
+  max-width: 40%;
+  border-radius: 5px 5px 2px 2px;
+  transition: height 0.35s ease;
+}
+
+#spendingChart .income-bar {
+  background: #c6f36a;
+  box-shadow: 0 0 10px rgba(198, 243, 106, 0.12);
+}
+
+#spendingChart .expense-bar {
+  background: #69a7ff;
+  box-shadow: 0 0 10px rgba(105, 167, 255, 0.12);
+}
+
+#spendingChart .chart-column small {
+  display: block;
+  color: #c3cede;
+  font-size: 10px;
+  font-weight: 500;
+  text-align: center;
+  white-space: nowrap;
+}
+
+#spendingChart .chart-empty {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 210px;
+  color: #c3cede;
+  text-align: center;
+}
+
+#spendingChart .chart-empty small {
+  color: #8793a7;
+}
+
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  margin-top: 12px;
+  color: #c3cede;
+  font-size: 12px;
+}
+
+.chart-legend > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legend-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.lime-dot {
+  background: #c6f36a;
+}
+
+.blue-dot {
+  background: #69a7ff;
+}
+
+.chart-note {
+  color: #8793a7;
+}
+
+@media (max-width: 480px) {
+  #spendingChart.chart-active {
+    padding-right: 4px;
+    padding-left: 4px;
+  }
+
+  #spendingChart .spending-bars {
+    grid-template-columns: repeat(7, minmax(48px, 1fr));
+  }
+
+  #spendingChart .chart-column small {
+    font-size: 9px;
+  }
+}
