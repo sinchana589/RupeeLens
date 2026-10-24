@@ -170,3 +170,48 @@ function updateExpenseIntelligence() {
     }
   }
 }
+function updateExpenseIntelligence() {
+  if (typeof getTransactions !== "function") return;
+
+  const items = getTransactions();
+  const expenses = items.filter(
+    item => item.type === "expense"
+  );
+
+  const recurring = detectRecurringExpenses(expenses);
+
+  const monthlyTotal = recurring
+    .filter(item => item.likelyMonthly)
+    .reduce((sum, item) => sum + item.amount, 0);
+
+  const recurringEl = document.getElementById("recurringTotal");
+  if (recurringEl) {
+    recurringEl.textContent = "₹" + monthlyTotal.toLocaleString("en-IN", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  }
+
+  const title = document.getElementById("discoveryTitle");
+  const message = document.getElementById("discoveryMessage");
+
+  if (recurring.length > 0) {
+    if (title) title.textContent = "Repeated expenses detected";
+
+    if (message) {
+      message.textContent = recurring.map(item =>
+        `${item.description}: ₹${item.amount} repeated ${item.occurrences} times` +
+        (item.likelyMonthly
+          ? " — likely monthly."
+          : " — repeated payment; monthly pattern not confirmed.")
+      ).join(" ");
+    }
+  } else {
+    if (title) title.textContent = "Your money deserves a closer look.";
+
+    if (message) {
+      message.textContent =
+        "Add matching expenses to discover repeated spending patterns.";
+    }
+  }
+}
