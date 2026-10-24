@@ -20,7 +20,7 @@ function calculateSummary(items = transactions) {
   let income = 0;
   let expenses = 0;
 
-  items.forEach((item) => {
+  items.forEach(item => {
     const amount = Number(item.amount);
     if (!Number.isFinite(amount)) return;
 
@@ -35,7 +35,13 @@ function calculateSummary(items = transactions) {
   };
 }
 
-function addTransaction(name, type, amount, category = "Other", date = "") {
+function addTransaction(
+  name,
+  type,
+  amount,
+  category = "Other",
+  date = ""
+) {
   const description = String(name || "").trim();
   const value = Number(amount);
 
@@ -49,7 +55,8 @@ function addTransaction(name, type, amount, category = "Other", date = "") {
   }
 
   transactions.unshift({
-    id: Date.now().toString() + Math.random().toString(36).slice(2),
+    id: Date.now().toString() +
+      Math.random().toString(36).slice(2),
     name: description,
     description,
     type,
@@ -73,7 +80,7 @@ function displaySummary(items = transactions) {
   const incomeEl = document.getElementById("income");
   const expensesEl = document.getElementById("expenses");
 
-  const money = (value) =>
+  const money = value =>
     "₹" + value.toLocaleString("en-IN", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
@@ -86,14 +93,29 @@ function displaySummary(items = transactions) {
   return summary;
 }
 
+function refreshDashboard() {
+  displaySummary();
+
+  if (typeof renderSpendingChart === "function") {
+    renderSpendingChart();
+  }
+
+  if (typeof updateExpenseIntelligence === "function") {
+    updateExpenseIntelligence();
+  }
+}
+
 function renderTransactions() {
   const list = document.getElementById("transactionList");
   const count = document.getElementById("transactionCount");
 
-  if (!list) return;
-
   if (count) {
     count.textContent = `${transactions.length} RECORDS`;
+  }
+
+  if (!list) {
+    refreshDashboard();
+    return;
   }
 
   if (transactions.length === 0) {
@@ -102,13 +124,14 @@ function renderTransactions() {
         <strong>No transactions yet</strong>
         <span>Your records will appear here after you add them.</span>
       </div>`;
-    displaySummary();
+
+    refreshDashboard();
     return;
   }
 
   list.innerHTML = "";
 
-  transactions.slice(0, 10).forEach((item) => {
+  transactions.slice(0, 10).forEach(item => {
     const row = document.createElement("div");
     row.className = "transaction-item";
 
@@ -127,57 +150,63 @@ function renderTransactions() {
     const amount = document.createElement("strong");
     amount.className =
       item.type === "income" ? "income-amount" : "expense-amount";
+
     amount.textContent =
-      `${item.type === "income" ? "+" : "−"}₹${Number(item.amount).toLocaleString("en-IN", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      })}`;
+      `${item.type === "income" ? "+" : "−"}₹${
+        Number(item.amount).toLocaleString("en-IN", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        })
+      }`;
 
     row.append(details, amount);
     list.appendChild(row);
   });
 
-  displaySummary();
+  refreshDashboard();
 }
 
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("transactionForm");
 
   if (form) {
-    form.addEventListener("submit", (event) => {
+    form.addEventListener("submit", event => {
       event.preventDefault();
 
-      const type = document.getElementById("type").value;
-      const amount = document.getElementById("amount").value;
-      const description = document.getElementById("description").value;
-      const category = document.getElementById("category").value;
-      const date = document.getElementById("date").value;
+      const type = document.getElementById("type")?.value;
+      const amount = document.getElementById("amount")?.value;
+      const description =
+        document.getElementById("description")?.value;
+      const category =
+        document.getElementById("category")?.value || "Other";
+      const date = document.getElementById("date")?.value || "";
 
-      if (!addTransaction(description, type, amount, category, date)) {
+      if (!addTransaction(
+        description,
+        type,
+        amount,
+        category,
+        date
+      )) {
         alert("Please enter a description and a valid amount.");
         return;
       }
 
-     renderTransactions();
-if (typeof updateExpenseIntelligence === "function") {
-  updateExpenseIntelligence();
-}
-form.reset();
-      document.getElementById("date").value =
-        new Date().toLocaleDateString("en-CA");
+      renderTransactions();
+      form.reset();
+
+      const dateInput = document.getElementById("date");
+      if (dateInput) {
+        dateInput.value = new Date().toLocaleDateString("en-CA");
+      }
     });
   }
 
   const refreshButton = document.getElementById("refreshButton");
+
   if (refreshButton) {
     refreshButton.addEventListener("click", renderTransactions);
   }
 
   renderTransactions();
-if (typeof updateExpenseIntelligence === "function") {
-  updateExpenseIntelligence();
-}
- if (typeof renderSpendingChart === "function"){ 
-renderSpendingChart();
- }   
 });
