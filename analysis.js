@@ -90,3 +90,41 @@ function generateSavingSuggestions(recurringExpenses) {
 
     return suggestions;
 }
+// Sample transactions for testing
+const sampleTransactions = [
+    {
+        description: "Netflix",
+        amount: 199,
+        date: "2026-01-05"
+    },
+    {
+        description: "Netflix",
+        amount: 199,
+        date: "2026-02-05"
+    },
+    {
+        description: "Netflix",
+        amount: 199,
+        date: "2026-03-05"
+    },
+    {
+        description: "Food",
+        amount: 250,
+        date: "2026-03-10"
+    }
+];
+
+// Detect recurring expenses
+const recurring = detectRecurringExpenses(sampleTransactions);
+
+// Generate saving suggestions
+const suggestions = generateSavingSuggestions(recurring);
+
+// Display results
+console.log("=== RupeeLens: Expense Analysis ===");
+
+console.log("\nDetected Expenses:");
+console.log(recurring);
+
+console.log("\nSaving Suggestions:");
+console.log(suggestions);
