@@ -1,103 +1,148 @@
 function calculateFinances(income, expenses) {
   const totalExpenses = expenses.reduce(
-    (total, expense) => total + Number(expense),
+    (total, expense) => total + Number(expense || 0),
     0
   );
 
   return {
-    income: Number(income),
+    income: Number(income) || 0,
     totalExpenses,
-    balance: Number(income) - totalExpenses
+    balance: (Number(income) || 0) - totalExpenses
   };
 }
 
 function renderSpendingChart() {
   const chart = document.getElementById("spendingChart");
-  const chartTotal = document.getElementById("chartTotal");
 
-  if (!chart || typeof getTransactions !== "function") return;
-
-  const transactions = getTransactions();
-  const expenses = transactions.filter(
-    item => item.type === "expense"
-  );
-  const income = transactions.filter(
-    item => item.type === "income"
-  );
-
-  const money = value =>
-    "₹" + value.toLocaleString("en-IN", {
-      maximumFractionDigits: 2
-    });
-
-  const totalExpenses = expenses.reduce(
-    (sum, item) => sum + Number(item.amount || 0), 0
-  );
-
-  if (chartTotal) chartTotal.textContent = money(totalExpenses);
-
-  if (transactions.length === 0) {
-    chart.innerHTML = `
-      <div class="chart-grid-lines"></div>
-      <div class="chart-empty">
-        <span>Your spending story starts here.</span>
-        <small>Add transactions to build your chart.</small>
-      </div>`;
+  if (!chart || typeof getTransactions !== "function") {
     return;
   }
 
+  const transactions = getTransactions();
+
+  const money = value =>
+    "₹" + Number(value).toLocaleString("en-IN", {
+      maximumFractionDigits: 2
+    });
+
+  const days = [
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+    "Sunday"
+  ];
+
   const groups = {};
 
+  days.forEach(day => {
+    groups[day] = {
+      income: 0,
+      expenses: 0
+    };
+  });
+
+  // Calculate the Monday of the current week.
+  const today = new Date();
+  const monday = new Date(today);
+  const weekday = (today.getDay() + 6) % 7;
+
+  monday.setDate(today.getDate() - weekday);
+  monday.setHours(0, 0, 0, 0);
+
+  // Group this week's transactions by weekday.
   transactions.forEach(item => {
-    const date = item.date || "Undated";
-    if (!groups[date]) groups[date] = { income: 0, expenses: 0 };
+    if (!item.date) return;
+
+    const date = new Date(item.date + "T00:00:00");
+
+    if (Number.isNaN(date.getTime())) return;
+
+    date.setHours(0, 0, 0, 0);
+
+    const difference = Math.floor(
+      (date.getTime() - monday.getTime()) / 86400000
+    );
+
+    if (difference < 0 || difference > 6) return;
+
+    const day = days[difference];
+    const amount = Number(item.amount) || 0;
 
     if (item.type === "income") {
-      groups[date].income += Number(item.amount || 0);
+      groups[day].income += amount;
     } else if (item.type === "expense") {
-      groups[date].expenses += Number(item.amount || 0);
+      groups[day].expenses += amount;
     }
   });
 
-  const dates = Object.keys(groups).sort().slice(-7);
   const maxValue = Math.max(
     1,
-    ...dates.flatMap(date => [
-      groups[date].income,
-      groups[date].expenses
+    ...days.flatMap(day => [
+      groups[day].income,
+      groups[day].expenses
     ])
   );
+
+  const chartMarkup = days.map(day => {
+    const item = groups[day];
+
+    const incomeHeight = item.income > 0
+      ? Math.max(3, item.income / maxValue * 100)
+      : 0;
+
+    const expenseHeight = item.expenses > 0
+      ? Math.max(3, item.expenses / maxValue * 100)
+      : 0;
+
+    return `
+      <div class="chart-column">
+        <div class="bar-pair">
+          <div
+            class="chart-bar income-bar"
+            style="height:${incomeHeight}%"
+            title="Income: ${money(item.income)}"
+          ></div>
+
+          <div
+            class="chart-bar expense-bar"
+            style="height:${expenseHeight}%"
+            title="Expenses: ${money(item.expenses)}"
+          ></div>
+        </div>
+
+        <small>${day}</small>
+      </div>
+    `;
+  }).join("");
 
   chart.innerHTML = `
     <div class="chart-grid-lines"></div>
     <div class="spending-bars">
-      ${dates.map(date => {
-        const item = groups[date];
-        const incomeHeight = item.income / maxValue * 100;
-        const expenseHeight = item.expenses / maxValue * 100;
-
-        return `
-          <div class="chart-column">
-            <div class="bar-pair">
-              <div class="chart-bar income-bar"
-                   style="height:${incomeHeight}%"
-                   title="Income: ${money(item.income)}"></div>
-              <div class="chart-bar expense-bar"
-                   style="height:${expenseHeight}%"
-                   title="Expenses: ${money(item.expenses)}"></div>
-            </div>
-            <small>${date.slice(5)}</small>
-          </div>`;
-      }).join("")}
-    </div>`;
+      ${chartMarkup}
+    </div>
+  `;
 
   chart.classList.add("chart-active");
+
+  // Update the optional total displayed above the chart.
+  const chartTotal = document.getElementById("chartTotal");
+
+  if (chartTotal) {
+    const totalExpenses = transactions
+      .filter(item => item.type === "expense")
+      .reduce(
+        (sum, item) => sum + (Number(item.amount) || 0),
+        0
+      );
+
+    chartTotal.textContent = money(totalExpenses);
+  }
 }
 
+// Refresh the graph after the page and transaction data load.
 document.addEventListener("DOMContentLoaded", () => {
   renderSpendingChart();
-
-  document.addEventListener("click", () => {
-    setTimeout(renderSpendingChart, 0);
-  });
 });
