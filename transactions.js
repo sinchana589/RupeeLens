@@ -46,3 +46,20 @@ function getTransactions() {
 }
 
 console.log(calculateSummary(transactions));
+function addTransaction(transactions, name, type, amount) {
+  if (!name.trim() || amount <= 0 || !Number.isFinite(amount)) {
+    return false;
+  }
+
+  if (type !== "income" && type !== "expense") {
+    return false;
+  }
+
+  transactions.push({
+    name: name.trim(),
+    type: type,
+    amount: amount
+  });
+
+  return true;
+}
