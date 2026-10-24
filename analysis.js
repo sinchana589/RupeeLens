@@ -139,9 +139,10 @@ function updateExpenseIntelligence() {
 
   const recurring = detectRecurringExpenses(expenses);
 
-  const monthlyTotal = recurring
-    .filter(item => item.likelyMonthly)
-    .reduce((sum, item) => sum + item.amount, 0);
+  const repeatedTotal = recurring.reduce(
+  (sum, item) => sum + item.totalSpent,
+  0
+);
 
   const recurringEl = document.getElementById("recurringTotal");
   if (recurringEl) {
@@ -186,7 +187,7 @@ function updateExpenseIntelligence() {
 
   const recurringEl = document.getElementById("recurringTotal");
   if (recurringEl) {
-    recurringEl.textContent = "₹" + monthlyTotal.toLocaleString("en-IN", {
+    recurringEl.textContent = "₹" + repeatedTotal.toLocaleString("en-IN", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
     });
