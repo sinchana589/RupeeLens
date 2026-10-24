@@ -63,3 +63,14 @@ function addTransaction(transactions, name, type, amount) {
 
   return true;
 }
+function displaySummary(transactions) {
+  const summary = calculateSummary(transactions);
+
+  console.log("Total Income: ₹" + summary.income);
+  console.log("Total Expenses: ₹" + summary.expenses);
+  console.log("Balance: ₹" + summary.balance);
+
+  return summary;
+}
+
+displaySummary(sampleTransactions);
