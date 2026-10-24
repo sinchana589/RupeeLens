@@ -133,7 +133,12 @@
               <span class="muted-label">Recorded expenses</span>
               <div class="chart-total" id="chartTotal">₹0.00</div>
             </div>
-            <span class="chart-period">ALL RECORDS</span>
+            <select id="chartRange" class="chart-period"
+        aria-label="Select spending period">
+  <option value="week">WEEKLY</option>
+  <option value="month">MONTHLY</option>
+  <option value="year">YEARLY</option>
+</select>
           </div>
 
           <div class="chart-area">
@@ -240,13 +245,14 @@
               </label>
             </div>
 
-            <button class="primary-button" type="submit">
-              <i data-lucide="plus"></i> Add to financial records
-              <label class="field">
-  <input type="checkbox" id="recurring">
+            <label class="field">
+  <input type="checkbox" id="recurring" name="recurring">
   Recurring Payment (Monthly)
 </label>
-            </button>
+
+<button class="primary-button" type="submit">
+  <i data-lucide="plus"></i> Add to financial records
+</button>
             <p class="form-hint"><i data-lucide="lock-keyhole"></i> Demo mode: enter sample data only.</p>
           </form>
         </article>
