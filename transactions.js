@@ -12,6 +12,10 @@ function loadTransactions() {
 
 let transactions = loadTransactions();
 
+function syncTransactions() {
+  transactions = loadTransactions();
+}
+
 function saveTransactions() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(transactions));
 }
@@ -61,8 +65,9 @@ function addTransaction(
     description,
     type,
     amount: value,
-    category,
-    date: date || new Date().toLocaleDateString("en-CA")
+   category,
+date: date || new Date().toLocaleDateString("en-CA"),
+recurring: document.getElementById("recurring")?.checked || false
   });
 
   saveTransactions();
@@ -87,6 +92,7 @@ function deleteTransaction(id) {
 }
 
 function displaySummary(items = transactions) {
+  syncTransactions();
   const summary = calculateSummary(items);
 
   const balanceEl = document.getElementById("balance");
