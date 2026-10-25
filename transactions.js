@@ -1,150 +1,52 @@
-/* RupeeLens transaction storage and dashboard */
+const STORAGE_KEY = "rupeelens_transactions";
 
-const TRANSACTIONS_STORAGE_KEY = "rupeelens_transactions";
-
-function getTransactions() {
+function loadTransactions() {
   try {
-    const saved = localStorage.getItem(TRANSACTIONS_STORAGE_KEY);
-    const parsed = JSON.parse(saved || "[]");
-    return Array.isArray(parsed) ? parsed : [];
+    const saved = localStorage.getItem(STORAGE_KEY);
+    return saved ? JSON.parse(saved) : [];
   } catch (error) {
     console.error("Could not load transactions:", error);
     return [];
   }
 }
 
-function saveTransactions(items) {
-  try {
-    localStorage.setItem(
-      TRANSACTIONS_STORAGE_KEY,
-      JSON.stringify(items)
-    );
-    return true;
-  } catch (error) {
-    console.error("Could not save transactions:", error);
-    alert("Could not save the transaction. Please try again.");
-    return false;
-  }
+let transactions = loadTransactions();
+
+function saveTransactions() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(transactions));
 }
 
-function formatRupee(amount) {
-  return "₹" + (Number(amount) || 0).toLocaleString("en-IN", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
+function calculateSummary(items = transactions) {
+  let income = 0;
+  let expenses = 0;
+
+  items.forEach(item => {
+    const amount = Number(item.amount);
+    if (!Number.isFinite(amount)) return;
+
+    if (item.type === "income") income += amount;
+    if (item.type === "expense") expenses += amount;
   });
-}
 
-function displaySummary() {
-  const transactions = getTransactions();
-
-  const income = transactions
-    .filter(item => item.type === "income")
-    .reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
-
-  const expenses = transactions
-    .filter(item => item.type === "expense")
-    .reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
-
-  const balanceElement = document.getElementById("balance");
-  const incomeElement = document.getElementById("income");
-  const expensesElement = document.getElementById("expenses");
-
-  if (balanceElement) {
-    balanceElement.textContent = formatRupee(income - expenses);
-  }
-
-  if (incomeElement) {
-    incomeElement.textContent = formatRupee(income);
-  }
-
-  if (expensesElement) {
-    expensesElement.textContent = formatRupee(expenses);
-  }
-}
-
-function renderRecentTransactions() {
-  const list = document.getElementById("transactionList");
-  const count = document.getElementById("transactionCount");
-
-  if (!list) return;
-
-  const transactions = getTransactions();
-
-  if (count) {
-    count.textContent =
-      `${transactions.length} RECORD${transactions.length === 1 ? "" : "S"}`;
-  }
-
-  list.replaceChildren();
-
-  if (transactions.length === 0) {
-    const message = document.createElement("p");
-    message.textContent =
-      "No transactions yet. Add a transaction to see it here.";
-    list.appendChild(message);
-    return;
-  }
-
-  transactions.slice(0, 5).forEach((item, index) => {
-    const row = document.createElement("div");
-    row.className = "transaction-item";
-
-    const details = document.createElement("div");
-    details.className = "transaction-details";
-
-    const title = document.createElement("strong");
-    title.textContent =
-      item.description || item.name || item.category || "Transaction";
-
-    const date = document.createElement("span");
-    date.textContent =
-      `${item.category || "Other"} · ${item.date || "No date"}`;
-
-    details.append(title, date);
-
-    const amount = document.createElement("strong");
-    const isIncome = item.type === "income";
-
-    amount.textContent =
-      `${isIncome ? "+" : "−"}${formatRupee(item.amount)}`;
-
-    amount.className = isIncome ? "income-amount" : "expense-amount";
-
-    const deleteButton = document.createElement("button");
-    deleteButton.type = "button";
-    deleteButton.textContent = "Delete";
-
-    deleteButton.addEventListener("click", () => {
-      const current = getTransactions();
-      const updated = current.filter((record, i) => {
-        if (item.id != null && record.id != null) {
-          return String(record.id) !== String(item.id);
-        }
-        return i !== index;
-      });
-
-      if (saveTransactions(updated)) {
-        refreshDashboard();
-      }
-    });
-
-    row.append(details, amount, deleteButton);
-    list.appendChild(row);
-  });
+  return {
+    income,
+    expenses,
+    balance: income - expenses
+  };
 }
 
 function addTransaction(
-  description,
+  name,
   type,
   amount,
   category = "Other",
   date = ""
 ) {
+  const description = String(name || "").trim();
   const value = Number(amount);
-  const name = String(description || "").trim();
 
   if (
-    !name ||
+    !description ||
     !["income", "expense"].includes(type) ||
     !Number.isFinite(value) ||
     value <= 0
@@ -152,28 +54,60 @@ function addTransaction(
     return false;
   }
 
-  const transactions = getTransactions();
-
   transactions.unshift({
-    id: Date.now().toString(),
-    name: name,
-    description: name,
-    type: type,
+    id: Date.now().toString() +
+      Math.random().toString(36).slice(2),
+    name: description,
+    description,
+    type,
     amount: value,
-    category: category || "Other",
-    date: date || new Date().toISOString().slice(0, 10),
-    recurring: document.getElementById("recurring")?.checked || false
+    category,
+    date: date || new Date().toLocaleDateString("en-CA")
   });
 
-  if (!saveTransactions(transactions)) return false;
-
-  refreshDashboard();
+  saveTransactions();
   return true;
+}
+
+function getTransactions() {
+  return transactions;
+}
+function deleteTransaction(id) {
+  transactions = transactions.filter(item => item.id !== id);
+  saveTransactions();
+  renderTransactions();
+
+  if (typeof updateExpenseIntelligence === "function") {
+    updateExpenseIntelligence();
+  }
+
+  if (typeof renderSpendingChart === "function") {
+    renderSpendingChart();
+  }
+}
+
+function displaySummary(items = transactions) {
+  const summary = calculateSummary(items);
+
+  const balanceEl = document.getElementById("balance");
+  const incomeEl = document.getElementById("income");
+  const expensesEl = document.getElementById("expenses");
+
+  const money = value =>
+    "₹" + value.toLocaleString("en-IN", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+
+  if (balanceEl) balanceEl.textContent = money(summary.balance);
+  if (incomeEl) incomeEl.textContent = money(summary.income);
+  if (expensesEl) expensesEl.textContent = money(summary.expenses);
+
+  return summary;
 }
 
 function refreshDashboard() {
   displaySummary();
-  renderRecentTransactions();
 
   if (typeof renderSpendingChart === "function") {
     renderSpendingChart();
@@ -182,64 +116,120 @@ function refreshDashboard() {
   if (typeof updateExpenseIntelligence === "function") {
     updateExpenseIntelligence();
   }
-
-  if (typeof renderBudgetPlanner === "function") {
-    renderBudgetPlanner();
-  }
 }
 
-function initializeTransactionForm() {
+function renderTransactions() {
+  const list = document.getElementById("transactionList");
+  const count = document.getElementById("transactionCount");
+
+  if (count) {
+    count.textContent = `${transactions.length} RECORDS`;
+  }
+
+  if (!list) {
+    refreshDashboard();
+    return;
+  }
+
+  if (transactions.length === 0) {
+    list.innerHTML = `
+      <div class="empty-transactions">
+        <strong>No transactions yet</strong>
+        <span>Your records will appear here after you add them.</span>
+      </div>`;
+
+    refreshDashboard();
+    return;
+  }
+
+  list.innerHTML = "";
+
+  transactions.slice(0, 10).forEach(item => {
+    const row = document.createElement("div");
+    row.className = "transaction-item";
+
+    const details = document.createElement("div");
+    details.className = "transaction-details";
+
+    const title = document.createElement("strong");
+    title.textContent = item.description || item.name;
+
+    const subtitle = document.createElement("span");
+    subtitle.textContent =
+      `${item.category || "Other"} · ${item.date || ""}`;
+
+    details.append(title, subtitle);
+
+    const amount = document.createElement("strong");
+    amount.className =
+      item.type === "income" ? "income-amount" : "expense-amount";
+
+    amount.textContent =
+      `${item.type === "income" ? "+" : "−"}₹${
+        Number(item.amount).toLocaleString("en-IN", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        })
+      }`;
+
+    const deleteBtn = document.createElement("button");
+deleteBtn.textContent = "🗑 Delete";
+deleteBtn.className = "delete-btn";
+
+deleteBtn.addEventListener("click", () => {
+  if (confirm("Are you sure you want to delete this transaction?")) {
+    deleteTransaction(item.id);
+  }
+});
+
+row.append(details, amount, deleteBtn);
+list.appendChild(row);
+  });
+
+  refreshDashboard();
+}
+
+document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("transactionForm");
 
-  if (form && !form.dataset.transactionHandlerAdded) {
-    form.dataset.transactionHandlerAdded = "true";
-
-    form.addEventListener("submit", function (event) {
+  if (form) {
+    form.addEventListener("submit", event => {
       event.preventDefault();
 
-      const type =
-        document.getElementById("type")?.value || "expense";
-
-      const amount =
-        document.getElementById("amount")?.value;
-
+      const type = document.getElementById("type")?.value;
+      const amount = document.getElementById("amount")?.value;
       const description =
         document.getElementById("description")?.value;
-
       const category =
         document.getElementById("category")?.value || "Other";
+      const date = document.getElementById("date")?.value || "";
 
-      const date =
-        document.getElementById("date")?.value || "";
-
-      if (!addTransaction(description, type, amount, category, date)) {
-        alert("Please enter a description and an amount greater than ₹0.");
+      if (!addTransaction(
+        description,
+        type,
+        amount,
+        category,
+        date
+      )) {
+        alert("Please enter a description and a valid amount.");
         return;
       }
 
-      document.getElementById("amount").value = "";
-      document.getElementById("description").value = "";
+      renderTransactions();
+      form.reset();
 
-      const recurring = document.getElementById("recurring");
-      if (recurring) recurring.checked = false;
+      const dateInput = document.getElementById("date");
+      if (dateInput) {
+        dateInput.value = new Date().toLocaleDateString("en-CA");
+      }
     });
   }
 
   const refreshButton = document.getElementById("refreshButton");
 
-  if (refreshButton && !refreshButton.dataset.handlerAdded) {
-    refreshButton.dataset.handlerAdded = "true";
-    refreshButton.addEventListener("click", refreshDashboard);
+  if (refreshButton) {
+    refreshButton.addEventListener("click", renderTransactions);
   }
 
-  refreshDashboard();
-}
-
-if (document.readyState === "loading") {
-  document.addEventListener(
-    "DOMContentLoaded",
-    initializeTransactionForm
-  );
-} else {
-  initializeTransactionForm();
-}
+  renderTransactions();
+});
