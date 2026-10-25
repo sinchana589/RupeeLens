@@ -160,7 +160,6 @@ function renderSpendingChart() {
 
   chart.classList.add("chart-active");
 }
-
 document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("chartRange")?.addEventListener(
     "change",
@@ -168,10 +167,9 @@ document.addEventListener("DOMContentLoaded", () => {
   );
 
   renderSpendingChart();
-});
 
-
+  if (typeof renderBudgetPlanner === "function") {
+    renderBudgetPlanner();
   }
-
-  renderBudgetPlanner();
 });
+
