@@ -181,3 +181,35 @@ document.addEventListener("DOMContentLoaded", () => {
     renderBudgetPlanner();
   }
 });
+function calculateFutureSavings() {
+  const monthly = Math.max(
+    0,
+    Number(document.getElementById("futureMonthly").value) || 0
+  );
+
+  const years = Math.min(
+    50,
+    Math.max(
+      1,
+      Number(document.getElementById("futureYears").value) || 1
+    )
+  );
+
+  const total = monthly * 12 * years;
+
+  document.getElementById("futureTotal").textContent =
+    "₹" + total.toLocaleString("en-IN", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+
+  document.getElementById("futureMessage").textContent =
+    `Saving ₹${monthly.toLocaleString("en-IN")} monthly for ${years} years means ₹${total.toLocaleString("en-IN")} saved.`;
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("futureCalculate")
+    ?.addEventListener("click", calculateFutureSavings);
+
+  calculateFutureSavings();
+});
