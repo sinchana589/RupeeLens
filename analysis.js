@@ -98,11 +98,11 @@ function updateExpenseIntelligence() {
   const recurring = detectRecurringExpenses(expenses);
 
   // Count only expenses that match a monthly pattern.
-  const monthlyTotal = recurring
-  .reduce(
-    (sum, item) => sum + item.amount,
-    0
-  );
+  // Add the total value of all repeated transactions.
+const monthlyTotal = recurring.reduce(
+  (sum, item) => sum + item.totalSpent,
+  0
+);
   const recurringEl =
     document.getElementById("recurringTotal");
 
