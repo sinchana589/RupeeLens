@@ -35,7 +35,7 @@ function detectRecurringExpenses(transactions) {
     const datedItems = items
       .map(item => ({
         item,
-        date: new Date(item.date)
+        date: new Date(item.date + "T00:00:00")
       }))
       .filter(entry => !Number.isNaN(entry.date.getTime()))
       .sort((a, b) => a.date - b.date);
