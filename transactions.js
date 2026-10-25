@@ -130,8 +130,11 @@ function displaySummary(items = transactions) {
   return summary;
 }
 
-function refreshDashboard() {
+  function refreshDashboard() {
   displaySummary();
+  updateMonthlyBudget();
+
+  if (typeof renderSpendingChart === "function") {
 
   if (typeof renderSpendingChart === "function") {
     renderSpendingChart();
@@ -260,4 +263,114 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   renderTransactions();
+});
+const BUDGET_KEY = "rupeelens_monthly_budget";
+
+function formatBudgetMoney(value) {
+return "₹" + Number(value).toLocaleString("en-IN", {
+minimumFractionDigits: 2,
+maximumFractionDigits: 2
+});
+}
+
+function updateMonthlyBudget() {
+const limitEl = document.getElementById("budgetLimit");
+const spentEl = document.getElementById("budgetSpent");
+const remainingEl = document.getElementById("budgetRemaining");
+const messageEl = document.getElementById("budgetMessage");
+const progressEl = document.getElementById("budgetProgress");
+const fillEl = document.getElementById("budgetProgressFill");
+const amountInput = document.getElementById("monthlyBudgetAmount");
+
+if (!limitEl || !spentEl || !remainingEl) return;
+
+const savedBudget = Number(localStorage.getItem(BUDGET_KEY)) || 0;
+const now = new Date();
+const currentMonth = now.getMonth();
+const currentYear = now.getFullYear();
+
+const spent = transactions.reduce((total, item) => {
+if (item.type !== "expense" || !item.date) return total;
+
+const date = new Date(item.date + "T12:00:00");
+
+if (
+  date.getMonth() === currentMonth &&
+  date.getFullYear() === currentYear
+) {
+  return total + (Number(item.amount) || 0);
+}
+
+return total;
+
+}, 0);
+
+const remaining = savedBudget - spent;
+const percentage = savedBudget > 0
+? Math.min((spent / savedBudget) * 100, 100)
+: 0;
+
+limitEl.textContent = formatBudgetMoney(savedBudget);
+spentEl.textContent = formatBudgetMoney(spent);
+remainingEl.textContent = formatBudgetMoney(remaining);
+
+if (amountInput && savedBudget > 0) {
+amountInput.value = savedBudget;
+}
+
+if (fillEl) {
+fillEl.style.width = percentage + "%";
+}
+
+if (progressEl) {
+progressEl.setAttribute("aria-valuenow", Math.round(percentage));
+}
+
+if (messageEl) {
+if (savedBudget <= 0) {
+messageEl.textContent = "Set a monthly budget to start tracking your spending.";
+} else if (spent > savedBudget) {
+messageEl.textContent = "Budget exceeded by " + formatBudgetMoney(spent - savedBudget) + ".";
+} else if (spent === savedBudget) {
+messageEl.textContent = "You've reached your monthly budget limit.";
+} else {
+messageEl.textContent = formatBudgetMoney(remaining) + " remaining in your monthly budget.";
+}
+}
+
+if (fillEl) {
+fillEl.style.backgroundColor =
+savedBudget > 0 && spent > savedBudget ? "#ff6b6b" : "";
+}
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+const budgetForm = document.getElementById("budgetForm");
+const budgetInput = document.getElementById("monthlyBudgetAmount");
+
+if (budgetForm && budgetInput) {
+const savedBudget = localStorage.getItem(BUDGET_KEY);
+
+if (savedBudget) {
+  budgetInput.value = savedBudget;
+}
+
+budgetForm.addEventListener("submit", event => {
+  event.preventDefault();
+
+  const budget = Number(budgetInput.value);
+
+  if (!Number.isFinite(budget) || budget <= 0) {
+    alert("Please enter a monthly budget greater than ₹0.");
+    return;
+  }
+
+  localStorage.setItem(BUDGET_KEY, String(budget));
+  updateMonthlyBudget();
+  alert("Monthly budget saved successfully!");
+});
+
+}
+
+updateMonthlyBudget();
 });
