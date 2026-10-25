@@ -1,4 +1,5 @@
 const STORAGE_KEY = "rupeelens_transactions";
+let transactionErrorMessage="";
 
 function loadTransactions() {
   try {
@@ -50,13 +51,30 @@ function addTransaction(
   const value = Number(amount);
 
   if (
-    !description ||
-    !["income", "expense"].includes(type) ||
-    !Number.isFinite(value) ||
-    value <= 0
-  ) {
+  !description ||
+  !["income", "expense"].includes(type) ||
+  !Number.isFinite(value) ||
+  value <= 0
+) {
+  return false;
+}
+
+transactionErrorMessage = "";
+
+if (type === "expense") {
+  const summary = calculateSummary();
+
+  if (value > summary.balance) {
+    transactionErrorMessage =
+      `Insufficient balance! Available balance: ₹${
+        summary.balance.toLocaleString("en-IN", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        })
+      }.`;
     return false;
   }
+}
 
   transactions.unshift({
     id: Date.now().toString() +
@@ -210,16 +228,20 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("category")?.value || "Other";
       const date = document.getElementById("date")?.value || "";
 
+      
       if (!addTransaction(
-        description,
-        type,
-        amount,
-        category,
-        date
-      )) {
-        alert("Please enter a description and a valid amount.");
-        return;
-      }
+  description,
+  type,
+  amount,
+  category,
+  date
+)) {
+  alert(
+    transactionErrorMessage ||
+    "Please enter a description and a valid amount."
+  );
+  return;
+}
 
       renderTransactions();
       form.reset();
