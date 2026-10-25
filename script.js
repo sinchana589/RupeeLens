@@ -169,9 +169,3 @@ document.addEventListener("DOMContentLoaded", () => {
 
   renderSpendingChart();
 });
-
-
-  }
-
-  renderBudgetPlanner();
-});
