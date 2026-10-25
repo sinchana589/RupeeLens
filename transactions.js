@@ -1,376 +1,359 @@
-const STORAGE_KEY = "rupeelens_transactions";
-let transactionErrorMessage="";
-
-function loadTransactions() {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    return saved ? JSON.parse(saved) : [];
-  } catch (error) {
-    console.error("Could not load transactions:", error);
-    return [];
-  }
-}
-
-let transactions = loadTransactions();
-
-function syncTransactions() {
-  transactions = loadTransactions();
-}
-
-function saveTransactions() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(transactions));
-}
-
-function calculateSummary(items = transactions) {
-  let income = 0;
-  let expenses = 0;
-
-  items.forEach(item => {
-    const amount = Number(item.amount);
-    if (!Number.isFinite(amount)) return;
-
-    if (item.type === "income") income += amount;
-    if (item.type === "expense") expenses += amount;
-  });
-
-  return {
-    income,
-    expenses,
-    balance: income - expenses
-  };
-}
-
-function addTransaction(
-  name,
-  type,
-  amount,
-  category = "Other",
-  date = ""
-) {
-  const description = String(name || "").trim();
-  const value = Number(amount);
-
-  if (
-  !description ||
-  !["income", "expense"].includes(type) ||
-  !Number.isFinite(value) ||
-  value <= 0
-) {
-  return false;
-}
-
-transactionErrorMessage = "";
-
-if (type === "expense") {
-  const summary = calculateSummary();
-
-  if (value > summary.balance) {
-    transactionErrorMessage =
-      `Insufficient balance! Available balance: ₹${
-        summary.balance.toLocaleString("en-IN", {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2
-        })
-      }.`;
-    return false;
-  }
-}
-
-  transactions.unshift({
-    id: Date.now().toString() +
-      Math.random().toString(36).slice(2),
-    name: description,
-    description,
-    type,
-    amount: value,
-   category,
-date: date || new Date().toLocaleDateString("en-CA"),
-recurring: document.getElementById("recurring")?.checked || false
-  });
-
-  saveTransactions();
-  return true;
-}
-
-function getTransactions() {
-  return transactions;
-}
-function deleteTransaction(id) {
-  transactions = transactions.filter(item => item.id !== id);
-  saveTransactions();
-  renderTransactions();
-
-  if (typeof updateExpenseIntelligence === "function") {
-    updateExpenseIntelligence();
-  }
-
-  if (typeof renderSpendingChart === "function") {
-    renderSpendingChart();
-  }
-}
-
-function displaySummary(items = transactions) {
-  syncTransactions();
-  const summary = calculateSummary(items);
-
-  const balanceEl = document.getElementById("balance");
-  const incomeEl = document.getElementById("income");
-  const expensesEl = document.getElementById("expenses");
-
-  const money = value =>
-    "₹" + value.toLocaleString("en-IN", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    });
-
-  if (balanceEl) balanceEl.textContent = money(summary.balance);
-  if (incomeEl) incomeEl.textContent = money(summary.income);
-  if (expensesEl) expensesEl.textContent = money(summary.expenses);
-
-  return summary;
-}
-
-  function refreshDashboard() {
-  displaySummary();
-  updateMonthlyBudget();
-
-  if (typeof renderSpendingChart === "function") {
-
-  if (typeof renderSpendingChart === "function") {
-    renderSpendingChart();
-  }
-
-  if (typeof updateExpenseIntelligence === "function") {
-    updateExpenseIntelligence();
-  }
-}
-
-function renderTransactions() {
-  const list = document.getElementById("transactionList");
-  const count = document.getElementById("transactionCount");
-
-  if (count) {
-    count.textContent = `${transactions.length} RECORDS`;
-  }
-
-  if (!list) {
-    refreshDashboard();
-    return;
-  }
-
-  if (transactions.length === 0) {
-    list.innerHTML = `
-      <div class="empty-transactions">
-        <strong>No transactions yet</strong>
-        <span>Your records will appear here after you add them.</span>
-      </div>`;
-
-    refreshDashboard();
-    return;
-  }
-
-  list.innerHTML = "";
-
-  transactions.slice(0, 10).forEach(item => {
-    const row = document.createElement("div");
-    row.className = "transaction-item";
-
-    const details = document.createElement("div");
-    details.className = "transaction-details";
-
-    const title = document.createElement("strong");
-    title.textContent = item.description || item.name;
-
-    const subtitle = document.createElement("span");
-    subtitle.textContent =
-      `${item.category || "Other"} · ${item.date || ""}`;
-
-    details.append(title, subtitle);
-
-    const amount = document.createElement("strong");
-    amount.className =
-      item.type === "income" ? "income-amount" : "expense-amount";
-
-    amount.textContent =
-      `${item.type === "income" ? "+" : "−"}₹${
-        Number(item.amount).toLocaleString("en-IN", {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2
-        })
-      }`;
-
-    const deleteBtn = document.createElement("button");
-deleteBtn.textContent = "🗑 Delete";
-deleteBtn.className = "delete-btn";
-
-deleteBtn.addEventListener("click", () => {
-  if (confirm("Are you sure you want to delete this transaction?")) {
-    deleteTransaction(item.id);
-  }
-});
-
-row.append(details, amount, deleteBtn);
-list.appendChild(row);
-  });
-
-  refreshDashboard();
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-  const form = document.getElementById("transactionForm");
-
-  if (form) {
-    form.addEventListener("submit", event => {
-      event.preventDefault();
-
-      const type = document.getElementById("type")?.value;
-      const amount = document.getElementById("amount")?.value;
-      const description =
-        document.getElementById("description")?.value;
-      const category =
-        document.getElementById("category")?.value || "Other";
-      const date = document.getElementById("date")?.value || "";
-
-      
-      if (!addTransaction(
-  description,
-  type,
-  amount,
-  category,
-  date
-)) {
-  alert(
-    transactionErrorMessage ||
-    "Please enter a description and a valid amount."
-  );
-  return;
-}
-
-      renderTransactions();
-      form.reset();
-
-      const dateInput = document.getElementById("date");
-      if (dateInput) {
-        dateInput.value = new Date().toLocaleDateString("en-CA");
-      }
-    });
-  }
-
-  const refreshButton = document.getElementById("refreshButton");
-
-  if (refreshButton) {
-    refreshButton.addEventListener("click", renderTransactions);
-  }
-
-  renderTransactions();
-});
-const BUDGET_KEY = "rupeelens_monthly_budget";
-
-function formatBudgetMoney(value) {
-return "₹" + Number(value).toLocaleString("en-IN", {
-minimumFractionDigits: 2,
-maximumFractionDigits: 2
-});
-}
-
-function updateMonthlyBudget() {
-const limitEl = document.getElementById("budgetLimit");
-const spentEl = document.getElementById("budgetSpent");
-const remainingEl = document.getElementById("budgetRemaining");
-const messageEl = document.getElementById("budgetMessage");
-const progressEl = document.getElementById("budgetProgress");
-const fillEl = document.getElementById("budgetProgressFill");
-const amountInput = document.getElementById("monthlyBudgetAmount");
-
-if (!limitEl || !spentEl || !remainingEl) return;
-
-const savedBudget = Number(localStorage.getItem(BUDGET_KEY)) || 0;
-const now = new Date();
-const currentMonth = now.getMonth();
-const currentYear = now.getFullYear();
-
-const spent = transactions.reduce((total, item) => {
-if (item.type !== "expense" || !item.date) return total;
-
-const date = new Date(item.date + "T12:00:00");
-
-if (
-  date.getMonth() === currentMonth &&
-  date.getFullYear() === currentYear
-) {
-  return total + (Number(item.amount) || 0);
-}
-
-return total;
-
-}, 0);
-
-const remaining = savedBudget - spent;
-const percentage = savedBudget > 0
-? Math.min((spent / savedBudget) * 100, 100)
-: 0;
-
-limitEl.textContent = formatBudgetMoney(savedBudget);
-spentEl.textContent = formatBudgetMoney(spent);
-remainingEl.textContent = formatBudgetMoney(remaining);
-
-if (amountInput && savedBudget > 0) {
-amountInput.value = savedBudget;
-}
-
-if (fillEl) {
-fillEl.style.width = percentage + "%";
-}
-
-if (progressEl) {
-progressEl.setAttribute("aria-valuenow", Math.round(percentage));
-}
-
-if (messageEl) {
-if (savedBudget <= 0) {
-messageEl.textContent = "Set a monthly budget to start tracking your spending.";
-} else if (spent > savedBudget) {
-messageEl.textContent = "Budget exceeded by " + formatBudgetMoney(spent - savedBudget) + ".";
-} else if (spent === savedBudget) {
-messageEl.textContent = "You've reached your monthly budget limit.";
-} else {
-messageEl.textContent = formatBudgetMoney(remaining) + " remaining in your monthly budget.";
-}
-}
-
-if (fillEl) {
-fillEl.style.backgroundColor =
-savedBudget > 0 && spent > savedBudget ? "#ff6b6b" : "";
-}
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-const budgetForm = document.getElementById("budgetForm");
-const budgetInput = document.getElementById("monthlyBudgetAmount");
-
-if (budgetForm && budgetInput) {
-const savedBudget = localStorage.getItem(BUDGET_KEY);
-
-if (savedBudget) {
-  budgetInput.value = savedBudget;
-}
-
-budgetForm.addEventListener("submit", event => {
-  event.preventDefault();
-
-  const budget = Number(budgetInput.value);
-
-  if (!Number.isFinite(budget) || budget <= 0) {
-    alert("Please enter a monthly budget greater than ₹0.");
-    return;
-  }
-
-  localStorage.setItem(BUDGET_KEY, String(budget));
-  updateMonthlyBudget();
-  alert("Monthly budget saved successfully!");
-});
-
-}
-
-updateMonthlyBudget();
-});
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0a1019">
+  <title>RupeeLens — Financial Intelligence</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+  <div class="app-shell">
+
+    <aside class="sidebar">
+
+      <a class="brand" href="#">
+        <span class="brand-icon"><i data-lucide="scan-eye"></i></span>
+        <span>Rupee<span class="brand-light">Lens</span></span>
+      </a>
+
+      <div class="workspace-label">WORKSPACE</div>
+      <nav class="navigation">
+        <a class="nav-link active" href="#overview"><i data-lucide="layout-dashboard"></i> Overview</a>
+        <a class="nav-link" href="#transactions"><i data-lucide="arrow-left-right"></i> Transactions</a>
+        <a class="nav-link" href="#intelligence"><i data-lucide="scan-search"></i> Expense intelligence <span class="nav-dot"></span></a>
+        <a class="nav-link" href="#insights"><i data-lucide="chart-no-axes-combined"></i> Insights</a>
+      </nav>
+
+      <div class="sidebar-spacer"></div>
+
+      <div class="privacy-card">
+        <i data-lucide="shield-check"></i>
+        <h3>Your money. Your control.</h3>
+        <p>Financial clarity starts with understanding your data.</p>
+        <span class="privacy-status"><span></span> Privacy-first design</span>
+      </div>
+
+      <div class="profile">
+        <div class="avatar">RL</div>
+        <div class="profile-info">
+          <strong>Finance workspace</strong>
+          <span>Personal dashboard</span>
+        </div>
+        <i data-lucide="settings-2"></i>
+   </div>
+    </aside>
+
+    <main class="main-content" id="overview">
+      <header class="topbar">
+        <div class="breadcrumb">Workspace <span>/</span> <strong>Overview</strong></div>
+        <div class="top-actions">
+          <span class="demo-badge">DEMO WORKSPACE</span>
+          <button class="icon-button" id="refreshButton" aria-label="Refresh">
+            <i data-lucide="refresh-cw"></i>
+          </button>
+          <div class="top-avatar">RL</div>
+        </div>
+      </header> 
+
+      <section class="welcome-section">
+        <div>
+          <div class="eyebrow"><span class="eyebrow-line"></span> YOUR FINANCIAL PULSE</div>
+          <h1>See beyond<br>the <span class="gradient-text">balance.</span></h1>
+          <p class="welcome-description">
+            Understand your spending, uncover hidden commitments,
+            and make every rupee count.
+          </p>
+        </div>
+        <div class="welcome-art" aria-hidden="true">
+          <div class="orbit orbit-one"></div>
+          <div class="orbit orbit-two"></div>
+          <div class="orbit orbit-three"></div>
+          <div class="orbit-core"><i data-lucide="scan-eye"></i></div>
+          <span class="orbit-point point-one"></span>
+          <span class="orbit-point point-two"></span>
+          <span class="orbit-point point-three"></span>
+        </div>
+      </section>
+
+      <section class="stats-grid" aria-label="Financial summary">
+        <article class="stat-card balance-card">
+          <div class="stat-top">
+            <span class="stat-label">Available balance</span>
+            <span class="stat-icon lime"><i data-lucide="wallet"></i></span>
+          </div>
+          <div class="stat-value" id="balance">₹0.00</div>
+          <div class="stat-footer"><span class="status-mark"></span> Income minus expenses</div>
+        </article>
+
+        <article class="stat-card">
+          <div class="stat-top">
+            <span class="stat-label">Total income</span>
+            <span class="stat-icon blue"><i data-lucide="trending-up"></i></span>
+          </div>
+          <div class="stat-value" id="income">₹0.00</div>
+          <div class="stat-footer">Money coming in</div>
+        </article>
+
+        <article class="stat-card">
+          <div class="stat-top">
+            <span class="stat-label">Total expenses</span>
+            <span class="stat-icon coral"><i data-lucide="trending-down"></i></span>
+          </div>
+          <div class="stat-value" id="expenses">₹0.00</div>
+          <div class="stat-footer">Money going out</div>
+        </article>
+
+        <article class="stat-card">
+          <div class="stat-top">
+            <span class="stat-label">Recurring payments</span>
+            <span class="stat-icon purple"><i data-lucide="repeat-2"></i></span>
+          </div>
+          <div class="stat-value" id="recurringTotal">₹0.00</div>
+          <div class="stat-footer">Repeated spending . not confirmed monthly</div>
+        </article>
+      </section>
+<section class="panel budget-panel" id="monthlyBudget">
+    <div class="panel-heading">
+      <div>
+        <div class="section-kicker">PLAN YOUR SPENDING</div>
+        <h2>Monthly budget tracker</h2>
+      </div>
+      <span class="panel-icon"><i data-lucide="piggy-bank"></i></span>
+    </div>
+
+    <form id="budgetForm">
+      <label class="field">
+        <span>Monthly budget (₹)</span>
+        <input
+          type="number"
+          id="monthlyBudgetAmount"
+          min="1"
+          step="0.01"
+          placeholder="e.g. 10000"
+          required
+        >
+      </label>
+      <button class="primary-button" type="submit">
+        Save monthly budget
+      </button>
+    </form>
+
+    <div class="budget-details">
+      <div>
+        <span class="muted-label">Your monthly limit</span>
+        <strong id="budgetLimit">₹0.00</strong>
+      </div>
+      <div>
+        <span class="muted-label">Spent this month</span>
+        <strong id="budgetSpent">₹0.00</strong>
+      </div>
+      <div>
+        <span class="muted-label">Budget remaining</span>
+        <strong id="budgetRemaining">₹0.00</strong>
+      </div>
+    </div>
+
+    <div
+      class="budget-progress-track"
+      role="progressbar"
+      aria-label="Monthly budget used"
+      aria-valuemin="0"
+      aria-valuemax="100"
+      aria-valuenow="0"
+      id="budgetProgress"
+    >
+      <div class="budget-progress-fill" id="budgetProgressFill"></div>
+    </div>
+    <p id="budgetMessage" class="form-hint">
+      Set a monthly budget to start tracking your spending.
+    </p>
+  </section>
+      <section class="content-grid">
+        <article class="panel spending-panel" id="insights">
+          <div class="panel-heading">
+            <div>
+              <div class="section-kicker">YOUR MONEY IN MOTION</div>
+              <h2>Spending overview</h2>
+            </div>
+            <span class="panel-icon"><i data-lucide="chart-no-axes-combined"></i></span>
+          </div>
+
+          <div class="chart-summary">
+            <div>
+              <span class="muted-label">Recorded expenses</span>
+              <div class="chart-total" id="chartTotal">₹0.00</div>
+            </div>
+            <select id="chartRange" class="chart-period"
+        aria-label="Select spending period">
+  <option value="week">WEEKLY</option>
+  <option value="month">MONTHLY</option>
+  <option value="year">YEARLY</option>
+</select>
+          </div>
+
+          <div class="chart-area">
+            <div class="chart-y-labels">
+              <span>High</span><span>Mid</span><span>Low</span>
+            </div>
+            <div class="chart-placeholder" id="spendingChart">
+              <div class="chart-grid-lines"></div>
+              <div class="chart-empty">
+                <i data-lucide="chart-no-axes-column-increasing"></i>
+                <span>Your spending story starts here.</span>
+                <small>Add transactions to build your chart.</small>
+              </div>
+            </div>
+          </div>
+          <div class="chart-legend">
+            <span><i class="legend-dot lime-dot"></i> Income</span>
+            <span><i class="legend-dot blue-dot"></i> Expenses</span>
+            <span class="chart-note">Charts activate with transaction data</span>
+          </div>
+        </article>
+
+        <article class="panel intelligence-panel" id="intelligence">
+          <div class="panel-heading">
+            <div>
+              <div class="section-kicker">LOOK CLOSER</div>
+              <h2>Hidden expense radar</h2>
+            </div>
+            <span class="radar-icon"><i data-lucide="scan-search"></i></span>
+          </div>
+
+          <div class="radar-visual" aria-hidden="true">
+            <div class="radar-ring ring-one"></div>
+            <div class="radar-ring ring-two"></div>
+            <div class="radar-ring ring-three"></div>
+            <div class="radar-sweep"></div>
+            <i data-lucide="scan-eye"></i>
+            <span class="radar-blip blip-one"></span>
+            <span class="radar-blip blip-two"></span>
+          </div>
+
+          <div class="radar-message">
+            <h3 id="discoveryTitle">Your money deserves a closer look.</h3>
+            <p id="discoveryMessage">
+              Add your expenses to investigate recurring payments,
+              overlooked costs, and spending patterns.
+            </p>
+          </div>
+
+          <div class="radar-footer">
+            <span><span class="radar-status"></span> ANALYSIS READY</span>
+            <a href="#transactions">Explore <i data-lucide="arrow-up-right"></i></a>
+          </div>
+        </article>
+      </section>
+ 
+    
+      <section class="bottom-grid">
+        <article class="panel transaction-panel" id="transactions">
+          <div class="panel-heading">
+            <div>
+              <div class="section-kicker">FOLLOW EVERY RUPEE</div>
+              <h2>Record a transaction</h2>
+            </div>
+            <span class="panel-icon"><i data-lucide="plus-circle"></i></span>
+          </div>
+
+          <form id="transactionForm">
+            <div class="form-row">
+              <label class="field">
+                <span>Transaction type</span>
+                <select id="type" name="type">
+                  <option value="expense">Expense</option>
+                  <option value="income">Income</option>
+                </select>
+              </label>
+              <label class="field">
+                <span>Amount (₹)</span>
+                <input id="amount" name="amount" type="number" min="0.01" step="0.01" placeholder="e.g. 450" required>
+              </label>
+            </div>
+
+            <label class="field">
+              <span>Description</span>
+              <input id="description" name="description" type="text" placeholder="e.g. Monthly streaming subscription" maxlength="100" required>
+            </label>
+
+            <div class="form-row">
+              <label class="field">
+                <span>Category</span>
+                <select id="category" name="category">
+                  <option value="Food">Food & dining</option>
+                  <option value="Travel">Transport & travel</option>
+                  <option value="Shopping">Shopping</option>
+                  <option value="Bills">Bills & utilities</option>
+                  <option value="Subscription">Subscriptions</option>
+                  <option value="Education">Education</option>
+                  <option value="Salary">Salary</option>
+                  <option value="Other">Other</option>
+                </select>
+              </label>
+              <label class="field">
+                <span>Date</span>
+                <input id="date" name="date" type="date" required>
+              </label>
+            </div>
+
+            <label class="field">
+  <input type="checkbox" id="recurring" name="recurring">
+  Recurring Payment (Monthly)
+</label>
+
+<button class="primary-button" type="submit">
+  <i data-lucide="plus"></i> Add to financial records
+</button>
+            <p class="form-hint"><i data-lucide="lock-keyhole"></i> Demo mode: enter sample data only.</p>
+          </form>
+        </article>
+
+        <article class="panel recent-panel">
+          <div class="panel-heading">
+            <div>
+              <div class="section-kicker">YOUR ACTIVITY</div>
+              <h2>Recent transactions</h2>
+            </div>
+            <span class="count-pill" id="transactionCount">0 RECORDS</span>
+          </div>
+
+          <div class="transaction-list" id="transactionList">
+            <div class="empty-transactions">
+              <span class="empty-icon"><i data-lucide="receipt-text"></i></span>
+              <strong>No transactions yet</strong>
+              <span>Your records will appear here after you add them.</span>
+            </div>
+          </div>
+
+          <div class="recent-footer">
+            <span>Organise today. Understand tomorrow.</span>
+            <i data-lucide="arrow-right"></i>
+          </div>
+        </article>
+      </section>
+
+      <footer class="footer">
+        <a class="footer-brand" href="#overview">RupeeLens<span>®</span></a>
+        <span>Financial clarity, one decision at a time.</span>
+        <span class="footer-version">HACKATHON PROTOTYPE · V1.0</span>
+      </footer>
+    </main>
+  </div>
+
+  <script>
+    if (window.lucide) lucide.createIcons();
+    document.getElementById("date").value =
+      new Date().toLocaleDateString("en-CA");
+  </script>
+
+  <!-- Team members will connect transactions.js and analysis.js here. -->
+  <script src="transactions.js"></script>
+  <script src="script.js"></script>
+  <script src="analysis.js"></script>
+</body>
+</html>
