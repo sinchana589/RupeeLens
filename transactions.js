@@ -135,8 +135,6 @@ function displaySummary(items = transactions) {
   updateMonthlyBudget();
 
   if (typeof renderSpendingChart === "function") {
-
-  if (typeof renderSpendingChart === "function") {
     renderSpendingChart();
   }
 
