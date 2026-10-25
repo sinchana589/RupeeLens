@@ -99,12 +99,10 @@ function updateExpenseIntelligence() {
 
   // Count only expenses that match a monthly pattern.
   const monthlyTotal = recurring
-    .filter(item => item.likelyMonthly)
-    .reduce(
-      (sum, item) => sum + item.amount,
-      0
-    );
-
+  .reduce(
+    (sum, item) => sum + item.amount,
+    0
+  );
   const recurringEl =
     document.getElementById("recurringTotal");
 
