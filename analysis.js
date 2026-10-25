@@ -100,7 +100,8 @@ function updateExpenseIntelligence() {
   // Count only expenses that match a monthly pattern.
   // Add the total value of all repeated transactions.
 const monthlyTotal = recurring.reduce(
-  (sum, item) => sum + item.totalSpent,
+  (sum, item) =>
+    sum + (Number(item.amount) * Number(item.occurrences)),
   0
 );
   const recurringEl =
